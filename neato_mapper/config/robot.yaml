@@ -1,0 +1,73 @@
+# Robot hardware parameters. Pins are BCM GPIO numbers.
+# Values marked CALIBRATE must be measured on your robot (see README).
+
+neato_lidar:
+  ros__parameters:
+    port: /dev/serial0            # Pi UART on GPIO14/15 (needs disable-bt on Pi 3/4)
+    frame_id: laser_frame
+    target_rpm: 300.0
+    min_publish_rpm: 240.0        # scans outside this band are dropped
+    max_publish_rpm: 330.0
+    range_min: 0.06
+    range_max: 5.0
+    reverse_direction: false      # flip if objects on the robot's LEFT show up on the RIGHT in RViz
+    angle_offset_deg: 0.0         # prefer fixing heading via the laser TF yaw in robot.launch.py
+    drop_strength_warnings: false
+
+    motor_backend: lgpio          # lgpio (software PWM) | sysfs (kernel hardware PWM)
+    motor_pin: 18
+    motor_pwm_hz: 1000.0
+    gpio_chip: 0                  # Pi 5 on kernels older than 6.6.45: 4
+    sysfs_pwm_chip: 0             # only for motor_backend: sysfs
+    sysfs_pwm_channel: 0          # GPIO18 = PWM0 channel 0 on Pi 4
+    duty_feedforward: 0.55        # open-loop duty used while spinning up; tune so RPM ~300
+    duty_min: 0.0
+    duty_max: 0.9                 # the LDS motor is ~3 V nominal; don't slam it at 5 V
+    kp: 0.0010
+    ki: 0.0020
+    kd: 0.0
+
+neato_base:
+  ros__parameters:
+    gpio_backend: lgpio           # lgpio | mock
+    gpio_chip: 0
+    simulate: false
+
+    wheel_track: 0.240            # CALIBRATE: neato_bringup calibrate-track
+    ticks_per_meter: 2000.0       # CALIBRATE: neato_bringup calibrate
+    max_wheel_speed: 0.35         # m/s at 100% duty (measure: used as feed-forward)
+    max_linear_speed: 0.25        # slow = better maps
+    max_angular_speed: 1.5
+    max_linear_accel: 0.5         # gentle ramps reduce wheel slip -> cleaner odometry
+    max_angular_accel: 3.0
+    cmd_vel_timeout: 0.5          # stop if no command for this long
+    control_rate: 50.0
+    min_duty: 0.12
+    wheel_kp: 1.0                 # set both to 0.0 for pure open loop
+    wheel_ki: 4.0
+    speed_filter_alpha: 0.3
+
+    motor_pwm_hz: 2000.0
+    brake_on_zero: false
+    stby_pin: 25                  # TB6612FNG STBY; -1 for L298N
+    left_in1: 5
+    left_in2: 6
+    left_pwm: 12
+    right_in1: 16
+    right_in2: 20
+    right_pwm: 13
+    left_motor_invert: false      # motors face opposite ways, so one is usually inverted
+    right_motor_invert: true
+
+    left_enc_a: 17
+    left_enc_b: 27                # -1 if your wheel module only has one encoder channel
+    right_enc_a: 22
+    right_enc_b: 23
+    left_encoder_invert: false
+    right_encoder_invert: true
+    encoder_debounce_us: 0
+
+    odom_frame: odom
+    base_frame: base_link
+    publish_tf: true
+    pose_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 0.01]
